@@ -6,16 +6,16 @@
 - name: determine stack template to external
   set_fact:
     stack_template: complete_stack_ext.yaml
-  when: 'ext' in lr_name
+  when: "'ext' in lr_name"
 
 - name: create stack
   os_stack:
     auth: "{{ auth }}"
-    name: "{{ lr_name }}"
+    name: "{{ proj_name }}_{{ lr_name }}"
     state: present
     template: "heat/{{ stack_template }}"
     parameters:
       tenant_name: "{{ proj_name }}"
-      lr_name: "{{ lr_name }}"
+      lr_name: "{{ proj_name }}_{{ lr_name }}"
       ifcount: "{{ count }}"
       phys_routers: "{{ phys_routers_formatted }}"

@@ -2,6 +2,6 @@
 - name: delete stack
   os_stack:
     auth: "{{ auth }}"
-    name: "{{ lr_name }}"
+    name: "{{ proj_name }}_{{ lr_name }}"
     state: absent
   ignore_errors: true

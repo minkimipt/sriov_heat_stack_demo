@@ -19,6 +19,7 @@
     auth: "{{ auth }}"
     state: absent
     template: sec_group_stack.yaml
+  ignore_errors: true
 
 - name: delete project
   os_project:

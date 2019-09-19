@@ -50,6 +50,7 @@ resources:
         type: single_server.yaml
         properties:
           all_networks: {get_attr: [network, network_name]}
+          all_sriov_ports: {get_attr: [network, sriov_port_pairs]}
           index: INDEX
           image_id: cirros
           instance_type: tiny

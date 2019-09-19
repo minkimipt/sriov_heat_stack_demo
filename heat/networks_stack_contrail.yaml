@@ -59,6 +59,11 @@ outputs:
     description: all outputs
     value: { get_attr: [all_networks, attributes, network_name] }
 
+  sriov_port_pairs:
+    description: all outputs
+    value: 
+      - { get_attr: [all_networks, attributes, sriov_port_pairs] }
+
   vmis:
     description: all vmis created in VNs
     value:

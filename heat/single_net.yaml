@@ -63,6 +63,9 @@ resources:
     type: OS::ContrailV2::VirtualNetwork
     properties:
       name: { get_param: net_name }
+      provider_properties:
+        provider_properties_physical_network: "sriovnet1"
+        provider_properties_segmentation_id: 1008
       route_target_list:
         {
           route_target_list_route_target: { get_param: net_route_target },
@@ -93,6 +96,24 @@ resources:
       virtual_machine_interface_device_owner: "network:router_interface"
       virtual_network_refs: [{get_resource: net}]
 
+  sriov_vmi1:
+    type: OS::ContrailV2::VirtualMachineInterface
+    properties:
+      virtual_machine_interface_bindings:
+        virtual_machine_interface_bindings_key_value_pair:
+          - virtual_machine_interface_bindings_key_value_pair_key: "vnic_type"
+            virtual_machine_interface_bindings_key_value_pair_value: "direct"
+      virtual_network_refs: [{get_resource: net}]
+
+  sriov_vmi2:
+    type: OS::ContrailV2::VirtualMachineInterface
+    properties:
+      virtual_machine_interface_bindings:
+        virtual_machine_interface_bindings_key_value_pair:
+          - virtual_machine_interface_bindings_key_value_pair_key: "vnic_type"
+            virtual_machine_interface_bindings_key_value_pair_value: "direct"
+      virtual_network_refs: [{get_resource: net}]
+
 outputs:
   network_name:
     description: network deets
@@ -103,6 +124,11 @@ outputs:
   network_rt:
     description: network route target
     value: { get_attr: [net, network_ipam_refs, 0, uuid] }
+  sriov_port_pairs:
+    description: pairs of sriov ports created in this network
+    value: 
+      - {get_resource: sriov_vmi1 }
+      - {get_resource: sriov_vmi2 }
   network_vmi:
-    description: network route target
+    description: virutal machine interface used to connect to LR
     value: {get_resource: vmi }

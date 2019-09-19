@@ -16,6 +16,9 @@ parameters:
   all_networks:
     type: json
     description: Mapping of all internal netowrks that were created
+  all_sriov_ports:
+    type: json
+    description: Mapping of all sriov ports that were created in the networks
   index:
     type: number
     description: Index of creating ResourceGroup
@@ -25,6 +28,10 @@ parameters:
     default: allow_all_security_group
 
 resources:
+  # in all_networks parameter we are accepting a mapping of networks from the upper stack that looks like 
+  # {'0': net0, '1': net1, '2': net2} this mapping is used here to create a list of 2 networks that looks 
+  # like [net0, net1] for index 0, [net1, net2] for index '1' and so one. These lists are then passed to 
+  # nova_instance to acheive desired connectivity
   index_str:
     type: OS::Heat::Value
     properties:
@@ -35,6 +42,21 @@ resources:
           data:
             index: {get_param: index}
             networks: {get_param: all_networks}
+
+  # in all_sriov_ports parameter we are accepting a mapping of networks from the upper stack that looks like 
+  # {'0': [net0_port0, net0_port1], '1': [net1_port0, net1_port1], '2': [net2_port0, net2_port1]} this mapping
+  # is used here to create a list of 2 ports that looks like [net0_port1, net1_port0] for index 0, [net1_port1,
+  # net2_port0] and so one. There lists are the passed to sriov_nova_instance to acheive desired connectivity
+  sriov_port_pairs:
+    type: OS::Heat::Value
+    properties:
+      type: comma_delimited_list
+      value:
+        yaql:
+          expression: "[$.data.sriov_ports[str($.data.index)][1], $.data.sriov_ports[str($.data.index + 1)][0]]"
+          data:
+            index: {get_param: index}
+            sriov_ports: {get_param: all_sriov_ports}
 
   nova_instance:
     type: OS::Nova::Server
@@ -47,3 +69,16 @@ resources:
       networks:
         - network: { get_attr: [index_str, value, 0] }
         - network: { get_attr: [index_str, value, 1] }
+    depends_on: [index_str]
+
+  sriov_nova_instance:
+    type: OS::Nova::Server
+    properties:
+      availability_zone: sriov-az
+      image: { get_param: image_id }
+      flavor: { get_param: instance_type }
+      key_name: test_keypair
+      networks:
+        - port: { get_attr: [sriov_port_pairs, value, 0] }
+        - port: { get_attr: [sriov_port_pairs, value, 1] }
+    depends_on: [sriov_port_pairs]
