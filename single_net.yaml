@@ -1,0 +1,108 @@
+heat_template_version: queens
+
+parameters:
+  ipam:
+    type: string
+    description: ID of IPAM resource that was created on prev step
+  net_name:
+    type: string
+    description: Name of network
+    default: csb01_vrf4
+  net_route_target:
+    type: comma_delimited_list
+    description: Route target of network
+    default: "target:111:222"
+  first_octet:
+    type: string
+    description: First octet of a generated prefix
+    default: "10"
+  index:
+    type: number
+    description: Index of creating ResourceGroup
+  net_subnet_prefix_len:
+    type: string
+    description: Prefix length for network subnet 01
+    default: "24"
+  net_subnet_addfromstart:
+    type: string
+    description: addr_from_start for network subnet 01
+    default: "true"
+  security_group_name:
+    type: comma_delimited_list
+    description: Security Group names
+    default: allow_all
+  availability_zone:
+    type: string
+    description: The Availability Zone to launch the instance.
+    default: kernel-az
+  image_id:
+    type: string
+    description: Image ID
+    default: ubuntu-bionic
+  instance_type:
+    type: string
+    description: Flavor
+    default: small
+
+
+resources:
+  gen_prefix:
+    type: OS::Heat::Value
+    properties:
+      type: string
+      value:
+        list_join:
+          - "."
+          - - {get_param: first_octet}
+            - yaql:
+                expression: str($.data.index + 1) + ".0"
+                data:
+                  index: {get_param: index}
+
+  net:
+    type: OS::ContrailV2::VirtualNetwork
+    properties:
+      name: { get_param: net_name }
+      route_target_list:
+        {
+          route_target_list_route_target: { get_param: net_route_target },
+        }
+      network_ipam_refs: [{ get_param: ipam }]
+      network_ipam_refs_data:
+        [{
+          network_ipam_refs_data_ipam_subnets:
+            [{
+              network_ipam_refs_data_ipam_subnets_subnet:
+                {
+                  network_ipam_refs_data_ipam_subnets_subnet_ip_prefix: { list_join: [ ".", [ { get_attr: [gen_prefix, value] }, "0" ] ] },
+                  network_ipam_refs_data_ipam_subnets_subnet_ip_prefix_len: { get_param: net_subnet_prefix_len },
+                },
+                  network_ipam_refs_data_ipam_subnets_default_gateway: { list_join: [ ".", [ { get_attr: [gen_prefix, value] }, "1" ] ] },
+              network_ipam_refs_data_ipam_subnets_allocation_pools:
+                [{
+                  network_ipam_refs_data_ipam_subnets_allocation_pools_start: { list_join: [ ".", [ { get_attr: [gen_prefix, value] }, "2" ] ] },
+                  network_ipam_refs_data_ipam_subnets_allocation_pools_end: { list_join: [ ".", [ { get_attr: [gen_prefix, value] }, "100" ] ] },
+                }],
+              network_ipam_refs_data_ipam_subnets_addr_from_start: { get_param: net_subnet_addfromstart },
+            }],
+        }]
+
+  vmi:
+    type: OS::ContrailV2::VirtualMachineInterface
+    properties:
+      virtual_machine_interface_device_owner: "network:router_interface"
+      virtual_network_refs: [{get_resource: net}]
+
+outputs:
+  network_name:
+    description: network deets
+    value: { get_attr: [net, display_name] }
+  network_subnet:
+    description: network subnet
+    value: { get_attr: [net, network_ipam_refs, 0, attr, host_routes ] }
+  network_rt:
+    description: network route target
+    value: { get_attr: [net, network_ipam_refs, 0, uuid] }
+  network_vmi:
+    description: network route target
+    value: {get_resource: vmi }

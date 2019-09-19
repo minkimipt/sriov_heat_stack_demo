@@ -1,0 +1,11 @@
+---
+- name: create stack
+  os_stack:
+    auth: "{{ auth }}"
+    name: "{{ lr_name }}"
+    state: present
+    parameters:
+      tenant_name: "{{ proj_name }}"
+      lr_name: "{{ lr_name }}"
+      ifcount: "{{ count }}"
+      phys_routers: "{{ phys_routers_formatted }}"

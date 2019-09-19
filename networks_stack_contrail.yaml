@@ -1,0 +1,68 @@
+heat_template_version: queens
+description: Network part for service.
+parameters:
+  ipam_name:
+    type: string
+    description: IPAM 01 name
+    default: "internal_ipam"
+  ifcount:
+    type: number
+    description: Number of networks to create and interfaces to assign to vm
+    default: 10
+  lr_name:
+    type: string
+    description: name of a logical router to create
+    default: LR1
+  tenant_name:
+    type: string
+    description: name of the tenant
+    default: tenant1
+
+resources:
+  ipam:
+    type: OS::ContrailV2::NetworkIpam
+    properties:
+      name: { get_param: ipam_name }
+
+
+  net_name:
+    type: OS::Heat::Value
+    properties:
+      type: string
+      value:
+        yaql:
+          expression: $.data.tenant_name + "_" + $.data.lr_name + "_internal_netINDEX"
+          data:
+            lr_name: {get_param: lr_name}
+            tenant_name: {get_param: tenant_name}
+
+  all_networks:
+    type: OS::Heat::ResourceGroup
+    update_policy:
+      batch_create:
+        max_batch_size: 10
+    properties:
+      count: { get_param: ifcount }
+      index_var: INDEX
+      resource_def:
+        type: single_net.yaml
+        properties:
+          net_name: { get_attr: [net_name, value] }
+          index: INDEX
+          net_subnet_prefix_len: 24
+          net_subnet_addfromstart: true
+          ipam: { get_resource: ipam }
+    depends_on: [ipam]
+
+outputs:
+  network_name:
+    description: all outputs
+    value: { get_attr: [all_networks, attributes, network_name] }
+
+  vmis:
+    description: all vmis created in VNs
+    value:
+      yaql:
+        expression: $.data.vmi_map.values()
+        data:
+          vmi_map: { get_attr: [all_networks, attributes, network_vmi] }

@@ -1,0 +1,33 @@
+---
+- name: create project
+  os_project:
+    name: "{{ proj_name }}"
+    state: present
+    domain: Default
+
+- name: create admin user role assignment in this project
+  os_user_role:
+    user: admin
+    role: admin
+    project: "{{ proj_name }}"
+
+- name: create auth dict
+  set_fact:
+    auth:
+      auth_url: "{{ lookup('env', 'OS_AUTH_URL') }}"
+      username: "{{ lookup('env', 'OS_USERNAME') }}"
+      password: "{{ lookup('env', 'OS_PASSWORD') }}"
+      project_name: "{{ proj_name }}"
+
+- name: Create SG stack
+  os_stack:
+    name: allow_all_sg_stack
+    auth: "{{ auth }}"
+    state: present
+    template: sec_group_stack.yaml
+
+- name: create LRs for the tenant
+  include_tasks: lr_create.yaml
+  loop: "{{ lrs }}"
+  loop_control:
+    loop_var: lr_name

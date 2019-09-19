@@ -1,0 +1,49 @@
+heat_template_version: queens
+
+parameters:
+  availability_zone:
+    type: string
+    description: The Availability Zone to launch the instance.
+    default: kernel-az
+  image_id:
+    type: string
+    description: Image ID
+    default: ubuntu-bionic
+  instance_type:
+    type: string
+    description: Flavor
+    default: small
+  all_networks:
+    type: json
+    description: Mapping of all internal netowrks that were created
+  index:
+    type: number
+    description: Index of creating ResourceGroup
+  security_group:
+    type: string
+    description: Security Group
+    default: allow_all_security_group
+
+resources:
+  index_str:
+    type: OS::Heat::Value
+    properties:
+      type: comma_delimited_list
+      value:
+        yaql:
+          expression: "[$.data.networks[str($.data.index)], $.data.networks[str($.data.index + 1)]]"
+          data:
+            index: {get_param: index}
+            networks: {get_param: all_networks}
+
+  nova_instance:
+    type: OS::Nova::Server
+    properties:
+      availability_zone: { get_param: availability_zone }
+      image: { get_param: image_id }
+      flavor: { get_param: instance_type }
+      security_groups: [{ get_param: security_group }]
+      key_name: test_keypair
+      networks:
+        - network: { get_attr: [index_str, value, 0] }
+        - network: { get_attr: [index_str, value, 1] }

@@ -1,0 +1,31 @@
+---
+- name: create tenant
+  hosts: localhost
+  gather_facts: no
+  vars:
+    op: "create"
+    count: 2
+    phys_routers:
+      - DC1_LEAF-1
+      - DC1_LEAF-2
+      - DC1_BORDER_LEAF-1
+      - DC1_LEAF-3
+      - DC1_GW-2
+      - DC1_GW-1
+    lrs:
+      - lr1_ext
+      - lr2
+    tenants:
+      - tenant1
+      - tenant2
+  tasks:
+    - name: format phys routers
+      set_fact:
+        phys_routers_formatted: "{{ phys_routers_formatted | default([]) + ['default-global-system-config' + ':' + item] }}"
+      with_items: "{{ phys_routers }}"
+
+    - name: create tenants with all objects
+      include_tasks: "tenant_{{ op }}.yaml"
+      loop: "{{ tenants }}"
+      loop_control:
+        loop_var: proj_name

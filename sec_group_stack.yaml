@@ -1,0 +1,69 @@
+heat_template_version: queens
+
+description: Create a permissive security group
+
+resources:
+  allow_all_security_group:
+    type: OS::ContrailV2::SecurityGroup
+    properties:
+      name: allow_all_security_group
+      security_group_entries:
+        {
+          security_group_entries_policy_rule:
+            [{
+               security_group_entries_policy_rule_protocol: any,
+               security_group_entries_policy_rule_direction: '<>',
+               security_group_entries_policy_rule_ethertype: 'IPv4',
+               security_group_entries_policy_rule_dst_addresses:
+                 [{
+                   security_group_entries_policy_rule_dst_addresses_subnet:
+                     {
+                       security_group_entries_policy_rule_dst_addresses_subnet_ip_prefix: 0.0.0.0,
+                       security_group_entries_policy_rule_dst_addresses_subnet_ip_prefix_len: 0,
+                     },
+                 }],
+               security_group_entries_policy_rule_dst_ports:
+                 [{
+                   security_group_entries_policy_rule_dst_ports_start_port: -1,
+                   security_group_entries_policy_rule_dst_ports_end_port: -1,
+                 }],
+               security_group_entries_policy_rule_src_addresses:
+                 [{
+                   security_group_entries_policy_rule_src_addresses_security_group: 'local',
+                 }],
+               security_group_entries_policy_rule_src_ports:
+                 [{
+                   security_group_entries_policy_rule_src_ports_start_port: -1,
+                   security_group_entries_policy_rule_src_ports_end_port: -1,
+                 }],
+             },
+             {
+               security_group_entries_policy_rule_protocol: any,
+               security_group_entries_policy_rule_direction: '<>',
+               security_group_entries_policy_rule_ethertype: 'IPv6',
+               security_group_entries_policy_rule_dst_addresses:
+                 [{
+                   security_group_entries_policy_rule_dst_addresses_subnet:
+                     {
+                       security_group_entries_policy_rule_dst_addresses_subnet_ip_prefix: '::',
+                       security_group_entries_policy_rule_dst_addresses_subnet_ip_prefix_len: 0,
+                     },
+                 }],
+               security_group_entries_policy_rule_dst_ports:
+                 [{
+                   security_group_entries_policy_rule_dst_ports_start_port: -1,
+                   security_group_entries_policy_rule_dst_ports_end_port: -1,
+                 }],
+               security_group_entries_policy_rule_src_addresses:
+                 [{
+                   security_group_entries_policy_rule_src_addresses_security_group: 'local',
+                 }],
+               security_group_entries_policy_rule_src_ports:
+                 [{
+                   security_group_entries_policy_rule_src_ports_start_port: -1,
+                   security_group_entries_policy_rule_src_ports_end_port: -1,
+                 }],
+             } 
+            ]}
+
+

@@ -1,0 +1,28 @@
+---
+- name: create auth dict
+  set_fact:
+    auth:
+      auth_url: "{{ lookup('env', 'OS_AUTH_URL') }}"
+      username: "{{ lookup('env', 'OS_USERNAME') }}"
+      password: "{{ lookup('env', 'OS_PASSWORD') }}"
+      project_name: "{{ proj_name }}"
+
+- name: clean LR stacks for tenant
+  include_tasks: lr_destroy.yaml
+  loop: "{{ lrs }}"
+  loop_control:
+    loop_var: lr_name
+
+- name: Clean SG for tenant
+  os_stack:
+    name: allow_all_sg_stack
+    auth: "{{ auth }}"
+    state: absent
+    template: sec_group_stack.yaml
+
+- name: delete project
+  os_project:
+    name: "{{ proj_name }}"
+    state: absent
+    domain: Default
+  ignore_errors: true

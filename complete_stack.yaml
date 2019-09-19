@@ -1,0 +1,63 @@
+heat_template_version: queens
+
+description: One stack to gather them all
+
+parameters:
+  tenant_name:
+    type: string
+    description: name of the tenant
+    default: tenant1
+  lr_name:
+    type: string
+    description: name of a logical router to create
+    default: LR1
+  ifcount:
+    type: number
+    description: count of networks to create
+    default: 10
+  phys_routers:
+    type: comma_delimited_list
+    description: count of networks to create
+    default: default-global-system-config:DC1_LEAF-1, default-global-system-config:DC1_LEAF-2
+
+resources:
+  network_count:
+    type: OS::Heat::Value
+    properties:
+      type: string
+      value:
+        yaql:
+          expression: $.data.ifcount * 2
+          data:
+            ifcount: {get_param: ifcount}
+
+  network:
+    type: networks_stack_contrail.yaml
+    properties:
+      ifcount: { get_attr: [network_count, value] }
+      lr_name: {get_param: lr_name}
+      tenant_name: {get_param: tenant_name}
+
+  all_servers:
+    type: OS::Heat::ResourceGroup
+    update_policy:
+      batch_create:
+        max_batch_size: 10
+    properties:
+      count: { get_param: ifcount }
+      index_var: INDEX
+      resource_def:
+        type: single_server.yaml
+        properties:
+          all_networks: {get_attr: [network, network_name]}
+          index: INDEX
+          image_id: cirros
+          instance_type: tiny
+
+  logical_router:
+    type: OS::ContrailV2::LogicalRouter
+    properties:
+      name: { get_param: lr_name }
+      logical_router_type: "vxlan-routing"
+      virtual_machine_interface_refs: {get_attr: [network, vmis]}
+      physical_router_refs: { get_param: phys_routers }
