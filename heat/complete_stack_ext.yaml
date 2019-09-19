@@ -22,7 +22,7 @@ parameters:
   rt:
     type: string
     description: Route Target for external traffic exchange
-    default: target:64512:12345
+    default: "target:64512:12345"
 
 resources:
   network_count:
@@ -59,17 +59,11 @@ resources:
           image_id: cirros
           instance_type: tiny
 
-  ext_route_target:
-    type: OS::ContrailV2::RouteTarget
-    properties:
-      name: { get_param: rt }
-
   logical_router:
     type: OS::ContrailV2::LogicalRouter
     properties:
       name: { get_param: lr_name }
       logical_router_type: "vxlan-routing"
-      route_target_refs: [{get_resource: ext_route_target }]
       configured_route_target_list:
         configured_route_target_list_route_target: [{ get_param: rt }]
       virtual_machine_interface_refs: {get_attr: [network, vmis]}

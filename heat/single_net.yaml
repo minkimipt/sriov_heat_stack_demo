@@ -96,6 +96,22 @@ resources:
       virtual_machine_interface_device_owner: "network:router_interface"
       virtual_network_refs: [{get_resource: net}]
 
+  sriov_vmi1_ip:
+    type: OS::ContrailV2::InstanceIp
+    properties:
+      instance_ip_address: { list_join: [ ".", [ { get_attr: [gen_prefix, value] }, "98" ] ] }
+      instance_ip_family: "v4"
+      virtual_machine_interface_refs: [{get_resource: sriov_vmi1}]
+      virtual_network_refs: [{get_resource: net}]
+
+  sriov_vmi2_ip:
+    type: OS::ContrailV2::InstanceIp
+    properties:
+      instance_ip_address: { list_join: [ ".", [ { get_attr: [gen_prefix, value] }, "99" ] ] }
+      instance_ip_family: "v4"
+      virtual_machine_interface_refs: [{get_resource: sriov_vmi2}]
+      virtual_network_refs: [{get_resource: net}]
+
   sriov_vmi1:
     type: OS::ContrailV2::VirtualMachineInterface
     properties:
@@ -103,15 +119,20 @@ resources:
         virtual_machine_interface_bindings_key_value_pair:
           - virtual_machine_interface_bindings_key_value_pair_key: "vnic_type"
             virtual_machine_interface_bindings_key_value_pair_value: "direct"
+          - virtual_machine_interface_bindings_key_value_pair_key: "profile"
+            virtual_machine_interface_bindings_key_value_pair_value: "{\"physical_network\": \"sriovnet1\"}"
       virtual_network_refs: [{get_resource: net}]
 
   sriov_vmi2:
     type: OS::ContrailV2::VirtualMachineInterface
     properties:
+      name: sriov_vmi2
       virtual_machine_interface_bindings:
         virtual_machine_interface_bindings_key_value_pair:
           - virtual_machine_interface_bindings_key_value_pair_key: "vnic_type"
             virtual_machine_interface_bindings_key_value_pair_value: "direct"
+          - virtual_machine_interface_bindings_key_value_pair_key: "profile"
+            virtual_machine_interface_bindings_key_value_pair_value: "{\"physical_network\": \"sriovnet1\"}"
       virtual_network_refs: [{get_resource: net}]
 
 outputs:

@@ -53,7 +53,7 @@ resources:
       type: comma_delimited_list
       value:
         yaql:
-          expression: "[$.data.sriov_ports[str($.data.index)][1], $.data.sriov_ports[str($.data.index + 1)][0]]"
+          expression: "[$.data.sriov_ports[0][str($.data.index)][1], $.data.sriov_ports[0][str($.data.index + 1)][0]]"
           data:
             index: {get_param: index}
             sriov_ports: {get_param: all_sriov_ports}
@@ -69,7 +69,6 @@ resources:
       networks:
         - network: { get_attr: [index_str, value, 0] }
         - network: { get_attr: [index_str, value, 1] }
-    depends_on: [index_str]
 
   sriov_nova_instance:
     type: OS::Nova::Server
@@ -81,4 +80,10 @@ resources:
       networks:
         - port: { get_attr: [sriov_port_pairs, value, 0] }
         - port: { get_attr: [sriov_port_pairs, value, 1] }
-    depends_on: [sriov_port_pairs]
+
+outputs:
+  sriov_port_pairs:
+    description: all outputs
+    value: 
+      - { get_attr: [sriov_port_pairs, value] }
+
