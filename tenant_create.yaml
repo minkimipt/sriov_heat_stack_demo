@@ -24,7 +24,7 @@
     name: allow_all_sg_stack
     auth: "{{ auth }}"
     state: present
-    template: sec_group_stack.yaml
+    template: heat/sec_group_stack.yaml
 
 - name: create LRs for the tenant
   include_tasks: lr_create.yaml
