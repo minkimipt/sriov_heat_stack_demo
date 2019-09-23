@@ -19,3 +19,5 @@
       lr_name: "{{ proj_name }}_{{ lr_name }}"
       ifcount: "{{ count }}"
       phys_routers: "{{ phys_routers_formatted }}"
+      image: "{{ image }}"
+      flavor: "{{ flavor }}"

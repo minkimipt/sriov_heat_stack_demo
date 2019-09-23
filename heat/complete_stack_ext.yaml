@@ -3,6 +3,14 @@ heat_template_version: queens
 description: One stack to gather them all
 
 parameters:
+  flavor:
+    type: string
+    description: name of flavor
+    default: small
+  image:
+    type: string
+    description: name of image
+    default: cirros
   tenant_name:
     type: string
     description: name of the tenant
@@ -56,8 +64,8 @@ resources:
           all_networks: {get_attr: [network, network_name]}
           all_sriov_ports: {get_attr: [network, sriov_port_pairs]}
           index: INDEX
-          image_id: cirros
-          instance_type: tiny
+          image_id: {get_param: image}
+          instance_type: {get_param: flavor}
 
   logical_router:
     type: OS::ContrailV2::LogicalRouter
