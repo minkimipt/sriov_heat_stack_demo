@@ -6,7 +6,7 @@
     op: "create"
     image: "ubuntu"
     flavor: "small"
-    count: 2
+    count: 1
     phys_routers:
       - DC1_LEAF-1
       - DC1_LEAF-2
@@ -16,10 +16,10 @@
       - DC1_GW-1
     lrs:
       - lr1_ext
-      - lr2
+        #      - lr2
     tenants:
       - tenant1
-      - tenant2
+        #      - tenant2
   tasks:
     - name: format phys routers
       set_fact:

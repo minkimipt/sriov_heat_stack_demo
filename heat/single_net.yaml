@@ -16,6 +16,10 @@ parameters:
     type: string
     description: First octet of a generated prefix
     default: "10"
+  base_vlan:
+    type: number
+    description: Base vlan for sriov nets
+    default: 1300
   index:
     type: number
     description: Index of creating ResourceGroup
@@ -58,6 +62,16 @@ resources:
                 expression: str($.data.index + 1) + ".0"
                 data:
                   index: {get_param: index}
+  gen_vlan:
+    type: OS::Heat::Value
+    properties:
+      type: string
+      value:
+        yaql:
+          expression: $.data.base_vlan + $.data.index
+          data:
+            index: {get_param: index}
+            base_vlan: {get_param: base_vlan}
 
   net:
     type: OS::ContrailV2::VirtualNetwork
@@ -65,7 +79,7 @@ resources:
       name: { get_param: net_name }
       provider_properties:
         provider_properties_physical_network: "sriovnet1"
-        provider_properties_segmentation_id: 1008
+        provider_properties_segmentation_id: { get_attr: [gen_vlan, value] }
       route_target_list:
         {
           route_target_list_route_target: { get_param: net_route_target },
@@ -133,6 +147,24 @@ resources:
             virtual_machine_interface_bindings_key_value_pair_value: "direct"
           - virtual_machine_interface_bindings_key_value_pair_key: "profile"
             virtual_machine_interface_bindings_key_value_pair_value: "{\"physical_network\": \"sriovnet1\"}"
+      virtual_network_refs: [{get_resource: net}]
+
+  fabric_vmi:
+    type: OS::ContrailV2::VirtualMachineInterface
+    properties:
+      name: sriov_vmi2
+      virtual_machine_interface_bindings:
+        virtual_machine_interface_bindings_key_value_pair:
+          - virtual_machine_interface_bindings_key_value_pair_key: "vnic_type"
+            virtual_machine_interface_bindings_key_value_pair_value: "baremetal"
+          - virtual_machine_interface_bindings_key_value_pair_key: "profile"
+            virtual_machine_interface_bindings_key_value_pair_value: "{\"local_link_information\":[{\"port_id\":\"et-0/0/2_2\",\"switch_id\":\"et-0/0/2_2\",\"switch_info\":\"DC1_LEAF-2\",\"fabric\":\"dc1\"}]}"
+          - virtual_machine_interface_bindings_key_value_pair_key: "vif_type"
+            virtual_machine_interface_bindings_key_value_pair_value: "vrouter"
+          - virtual_machine_interface_bindings_key_value_pair_key: "vpg"
+            virtual_machine_interface_bindings_key_value_pair_value: "comp-sriov-p1p1"
+      virtual_machine_interface_properties:
+        virtual_machine_interface_properties_sub_interface_vlan_tag: { get_attr: [gen_vlan, value] }
       virtual_network_refs: [{get_resource: net}]
 
 outputs:
