@@ -129,6 +129,7 @@ resources:
   sriov_vmi1:
     type: OS::ContrailV2::VirtualMachineInterface
     properties:
+      name: sriov_vmi1
       virtual_machine_interface_bindings:
         virtual_machine_interface_bindings_key_value_pair:
           - virtual_machine_interface_bindings_key_value_pair_key: "vnic_type"
@@ -152,7 +153,7 @@ resources:
   fabric_vmi:
     type: OS::ContrailV2::VirtualMachineInterface
     properties:
-      name: sriov_vmi2
+      name: fabric_vmi
       virtual_machine_interface_bindings:
         virtual_machine_interface_bindings_key_value_pair:
           - virtual_machine_interface_bindings_key_value_pair_key: "vnic_type"

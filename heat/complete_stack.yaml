@@ -35,7 +35,7 @@ resources:
       type: string
       value:
         yaql:
-          expression: $.data.ifcount * 2
+          expression: $.data.ifcount + 1
           data:
             ifcount: {get_param: ifcount}
 
