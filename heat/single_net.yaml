@@ -77,6 +77,8 @@ resources:
     type: OS::ContrailV2::VirtualNetwork
     properties:
       name: { get_param: net_name }
+      virtual_network_properties:
+        virtual_network_properties_rpf: disable
       provider_properties:
         provider_properties_physical_network: "sriovnet1"
         provider_properties_segmentation_id: { get_attr: [gen_vlan, value] }
