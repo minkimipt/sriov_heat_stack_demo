@@ -161,9 +161,11 @@ resources:
           - virtual_machine_interface_bindings_key_value_pair_key: "vnic_type"
             virtual_machine_interface_bindings_key_value_pair_value: "baremetal"
           - virtual_machine_interface_bindings_key_value_pair_key: "profile"
+            # this is the port where SRIOV compute is connected to.
             virtual_machine_interface_bindings_key_value_pair_value: "{\"local_link_information\":[{\"port_id\":\"et-0/0/2_2\",\"switch_id\":\"et-0/0/2_2\",\"switch_info\":\"DC1_LEAF-2\",\"fabric\":\"dc1\"}]}"
           - virtual_machine_interface_bindings_key_value_pair_key: "vif_type"
             virtual_machine_interface_bindings_key_value_pair_value: "vrouter"
+            # this VPG must be present on the fabric before the demonstration
           - virtual_machine_interface_bindings_key_value_pair_key: "vpg"
             virtual_machine_interface_bindings_key_value_pair_value: "comp-sriov-p1p1"
       virtual_machine_interface_properties:

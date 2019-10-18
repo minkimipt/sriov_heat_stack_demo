@@ -3,10 +3,15 @@
   hosts: localhost
   gather_facts: no
   vars:
+    # default op code is create
     op: "create"
+    # Glance image name for images. It shoudl exist before this is executed.
     image: "ubuntu"
+    # flavor should exist before this is executed
     flavor: "small"
-    count: 1
+    # creating 2 kernel VMs and 2 SRIOV VMs
+    count: 2
+    # list of physical routers to extend LR to
     phys_routers:
       - DC1_LEAF-1
       - DC1_LEAF-2
@@ -16,7 +21,11 @@
       - DC1_GW-2
       - DC1_GW-1
     lrs:
+        # this will be created as "normal LR", which means that it will not enable inter-tenant prefix sharing
       - lr1
+        # this will be created as "external LR", which means that it will enable inter-tenant prefix sharing due to matching RTs
+      - lr2_ext
+    # all forementioned objects will be created in each of those tenants
     tenants:
       - tenant1
       - tenant2
