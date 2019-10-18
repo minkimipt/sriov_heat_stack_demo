@@ -1,7 +1,9 @@
 heat_template_version: queens
 
-description: One stack to gather them all
-
+description: >
+  This stack is an entry point for virtual infra creaton that includes 1 LR, ifcount of Instances located on kernel compute.
+  and ifcount of instances located on SRIOV compute. The number of netowrks is "ifcount + 1" for graphical representation of
+  how instaces are connected to nework see README.md
 parameters:
   flavor:
     type: string
@@ -39,6 +41,7 @@ resources:
           data:
             ifcount: {get_param: ifcount}
 
+# this is the entry point for creation of VNs that instances will be connected to 
   network:
     type: networks_stack_contrail.yaml
     properties:
@@ -46,6 +49,8 @@ resources:
       lr_name: {get_param: lr_name}
       tenant_name: {get_param: tenant_name}
 
+# this is the entry point for creation of instances, it gets the list of networks
+# and sriov ports created by network resource
   all_servers:
     type: OS::Heat::ResourceGroup
     update_policy:
@@ -63,10 +68,12 @@ resources:
           image_id: {get_param: image}
           instance_type: {get_param: flavor}
 
+# a single router is created here that is attatched to all VNs created by network resource
   logical_router:
     type: OS::ContrailV2::LogicalRouter
     properties:
       name: { get_param: lr_name }
+      # this enables us to create LR that can be extended to physical routers
       logical_router_type: "vxlan-routing"
       virtual_machine_interface_refs: {get_attr: [network, vmis]}
       physical_router_refs: { get_param: phys_routers }

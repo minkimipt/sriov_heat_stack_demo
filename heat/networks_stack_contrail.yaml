@@ -17,6 +17,10 @@ parameters:
     type: string
     description: name of the tenant
     default: tenant1
+  rt:
+    type: string
+    description: Route Target for external traffic exchange
+    default: "target:64512:12345"
 
 resources:
   ipam:
@@ -52,6 +56,7 @@ resources:
           net_subnet_prefix_len: 24
           net_subnet_addfromstart: true
           ipam: { get_resource: ipam }
+          net_route_target: { get_param: rt }
     depends_on: [ipam]
 
 outputs:

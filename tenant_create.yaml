@@ -11,6 +11,7 @@
     role: admin
     project: "{{ proj_name }}"
 
+# all furnter heat stack creations will be happening in projects that were created beforhand
 - name: create auth dict
   set_fact:
     auth:
@@ -19,6 +20,7 @@
       password: "{{ lookup('env', 'OS_PASSWORD') }}"
       project_name: "{{ proj_name }}"
 
+# creating one SG that will be leveraged by all VMs in the tenant
 - name: Create SG stack
   os_stack:
     name: allow_all_sg_stack
@@ -26,6 +28,7 @@
     state: present
     template: heat/sec_group_stack.yaml
 
+# starting the lowest level of ansible tasks that will create LRs taht are specified in lrs variable in the main.yaml
 - name: create LRs for the tenant
   include_tasks: lr_create.yaml
   loop: "{{ lrs }}"

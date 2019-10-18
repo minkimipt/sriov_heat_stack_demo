@@ -1,8 +1,10 @@
 ---
+# There are 2 kinds of LRs that are created by different highest level heat stacks. Normal is the one that is not supposed to exchange routes with other tenants
 - name: set stack template to normal
   set_fact:
     stack_template: complete_stack.yaml
 
+# External LR will be exchanging routes with other tenants by means of route leaking due to matching RTs
 - name: determine stack template to external
   set_fact:
     stack_template: complete_stack_ext.yaml

@@ -6,26 +6,28 @@
     op: "create"
     image: "ubuntu"
     flavor: "small"
-    count: 2
+    count: 1
     phys_routers:
       - DC1_LEAF-1
       - DC1_LEAF-2
       - DC1_BORDER_LEAF-1
+      - DC1_BORDER_LEAF-2
       - DC1_LEAF-3
       - DC1_GW-2
       - DC1_GW-1
     lrs:
-      #- lr1_ext
-      - lr2
+      - lr1
     tenants:
       - tenant1
-        #- tenant2
+      - tenant2
   tasks:
+    # physical routes where LR is going to be extended should be passed to the api in proper format, hence creating a list of formatted physical routers here
     - name: format phys routers
       set_fact:
         phys_routers_formatted: "{{ phys_routers_formatted | default([]) + ['default-global-system-config' + ':' + item] }}"
       with_items: "{{ phys_routers }}"
 
+      # stargin a task in a loop that will create/destroy tenants depending on the operation passed in op variable
     - name: create tenants with all objects
       include_tasks: "tenant_{{ op }}.yaml"
       loop: "{{ tenants }}"
